@@ -1,9 +1,15 @@
-
 # SaaS Revenue Retention & Expansion Model
 
 This model forecasts Gross Revenue Retention (GRR), Net Revenue Retention (NRR), and MRR expansion over time, based on inputs like churn and upsell rates.
 
 Built in Python and deployed with Streamlit, this tool allows users to simulate how customer revenue retention and expansion impact Monthly Recurring Revenue (MRR) over a 12+ month period.
+
+---
+
+## 🌐 Live App
+
+Try the live version here:  
+👉 [SaaS Revenue Retention App](https://saas-revenue-retention-app-bpepebtftewzxstyd5bt3u.streamlit.app/)
 
 ---
 
@@ -35,20 +41,3 @@ Built in Python and deployed with Streamlit, this tool allows users to simulate 
 ```bash
 pip install streamlit pandas
 streamlit run revenue_retention_model.py
-```
-
----
-
-## 📎 Related Models
-
-This tool is part of a broader SaaS Financial Modeling Series, including:
-
-- CAC & LTV Forecasting
-- Sales Capacity Planning
-- Scenario Modeling
-
----
-
-## 👨‍💻 Author
-
-Built by [Timothy T. Pham](https://github.com/TimothyTPham)
