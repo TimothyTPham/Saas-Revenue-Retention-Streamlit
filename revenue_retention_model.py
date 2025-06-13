@@ -1,56 +1,62 @@
-import streamlit as st
 import pandas as pd
+import numpy as np
+import streamlit as st
+import matplotlib.pyplot as plt
 
-st.title("SaaS Revenue Retention & Expansion Model")
+st.set_page_config(page_title="Revenue Retention Model", layout="centered")
 
-# --- User Inputs ---
-starting_mrr = st.number_input("Starting MRR", value=100000, step=1000)
-churn_rate = st.number_input("Monthly Churn Rate (%)", value=5.0, step=0.1) / 100
-expansion_rate = st.number_input("Expansion Rate (%)", value=10.0, step=0.1) / 100
-months = st.slider("Number of Months", min_value=1, max_value=36, value=12)
+st.title("SaaS Revenue Retention Model")
 
-# --- Calculations ---
+# Sample input table – replace with your actual logic or data loading
+st.subheader("Revenue Retention Inputs")
+
+initial_revenue = st.number_input("Initial Monthly Revenue ($)", min_value=0, value=10000, step=500)
+retention_rate = st.slider("Monthly Gross Revenue Retention (%)", min_value=0, max_value=100, value=90)
+expansion_rate = st.slider("Monthly Expansion (% of retained revenue)", min_value=0, max_value=100, value=5)
+months = st.slider("Number of Months", min_value=1, max_value=24, value=12)
+
+# Initialize DataFrame
 data = []
-current_mrr = starting_mrr
+revenue = initial_revenue
 
 for month in range(1, months + 1):
-    churned_mrr = round(current_mrr * churn_rate)
-    remaining_mrr = current_mrr - churned_mrr
-    expansion_mrr = round(remaining_mrr * expansion_rate)
-    ending_mrr = round(remaining_mrr + expansion_mrr)
-    grr = (current_mrr - churned_mrr) / current_mrr
-    nrr = (current_mrr - churned_mrr + expansion_mrr) / current_mrr
+    retained = revenue * (retention_rate / 100)
+    expanded = retained * (expansion_rate / 100)
+    total = retained + expanded
+    data.append({
+        "Month": f"Month {month}",
+        "Starting Revenue": round(revenue),
+        "Retained Revenue": round(retained),
+        "Expansion Revenue": round(expanded),
+        "Total Revenue": round(total)
+    })
+    revenue = total
 
-    data.append([
-        f"Month {month}",
-        f"${int(round(current_mrr)):,}",
-        f"${churned_mrr:,}",
-        f"${expansion_mrr:,}",
-        f"${ending_mrr:,}",
-        f"{grr:.1%}",
-        f"{nrr:.1%}"
-    ])
+chart_df = pd.DataFrame(data)
 
-    current_mrr = ending_mrr
+# --- SAFER FIX FOR MONTH EXTRACTION ---
+chart_df["Month"] = chart_df["Month"].str.extract(r'(\d+)')[0]
+chart_df = chart_df.dropna(subset=["Month"])
+chart_df["Month"] = chart_df["Month"].astype(int)
 
-# --- Output Table ---
-df = pd.DataFrame(data, columns=[
-    "Month", "Starting MRR", "Churned MRR", "Expansion MRR",
-    "Ending MRR", "GRR", "NRR"
-])
-st.subheader("Monthly Retention Table")
-st.dataframe(df)
+# --- Show Table ---
+st.subheader("Revenue Retention Table")
+st.dataframe(chart_df.style.format({
+    "Starting Revenue": "${:,.0f}",
+    "Retained Revenue": "${:,.0f}",
+    "Expansion Revenue": "${:,.0f}",
+    "Total Revenue": "${:,.0f}"
+}))
 
-# --- Line Chart ---
-chart_df = df[["Month", "Starting MRR", "Ending MRR"]].copy()
-chart_df["Month"] = chart_df["Month"].str.extract(r'(\\d+)').astype(int)
-chart_df["Starting MRR"] = chart_df["Starting MRR"].replace('[\\$,]', '', regex=True).astype(float)
-chart_df["Ending MRR"] = chart_df["Ending MRR"].replace('[\\$,]', '', regex=True).astype(float)
-chart_df.set_index("Month", inplace=True)
-
-st.subheader("MRR Over Time")
-st.line_chart(chart_df)
+# --- Plot ---
+st.subheader("Revenue Over Time")
+fig, ax = plt.subplots()
+ax.plot(chart_df["Month"], chart_df["Total Revenue"], marker='o')
+ax.set_xlabel("Month")
+ax.set_ylabel("Total Revenue ($)")
+ax.set_title("Monthly Revenue Retention and Expansion")
+ax.grid(True)
+st.pyplot(fig)
 
 # --- Footer ---
-st.markdown("---")
-st.markdown("👨‍💻 Built by [Timothy T. Pham](https://github.com/TimothyTPham) — Part of the SaaS Financial Modeling Series")
+st.caption("Built by Tim Pham")
